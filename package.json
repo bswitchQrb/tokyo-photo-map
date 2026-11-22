@@ -7,7 +7,9 @@
     "dev": "rsbuild dev",
     "build": "rsbuild build",
     "preview": "rsbuild preview",
-    "geo:build": "node scripts/build-geojson.mjs"
+    "geo:build": "node scripts/build-geojson.mjs",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "d3-geo": "^3.1.1",
@@ -23,6 +25,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "mapshaper": "^0.6.102",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "vitest": "^3.2.4"
   }
 }
