@@ -109,7 +109,11 @@ export function App() {
         <p>記録と写真はこのブラウザに保存されます。機種変更の前には「書き出す」で記録を保存しておいてください（写真は書き出しに含まれません）。</p>
         <DataMenu hasData={visited.size > 0} onImport={handleImport} onExport={handleExport} onClear={handleClear} />
         <p className="credit">
-          出典：国土数値情報（行政区域データ）（国土交通省）を加工して作成
+          出典：「
+          <a href="https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2024.html" target="_blank" rel="noopener noreferrer">
+            国土数値情報（行政区域データ）
+          </a>
+          」（国土交通省）をもとに bswitchQrb 作成（2020年1月1日時点のデータを簡略化して使用）
         </p>
       </footer>
     </div>

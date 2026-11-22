@@ -680,6 +680,10 @@ button.stamp:hover {
   color: var(--ink-faint);
 }
 
+.credit a {
+  color: inherit;
+}
+
 :focus-visible {
   outline: 2px solid var(--shu);
   outline-offset: 2px;
