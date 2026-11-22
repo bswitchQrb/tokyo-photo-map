@@ -37,3 +37,13 @@ export function countMunicipalities(geojson: FeatureCollection): number {
     geojson.features.map((f) => (f.properties as MunicipalityProps).code),
   ).size;
 }
+
+/** GeoJSON から市区町村の一覧をコード順で取得（同じコードは1件にまとめる） */
+export function listMunicipalities(geojson: FeatureCollection): MunicipalityProps[] {
+  const byCode = new Map<string, MunicipalityProps>();
+  for (const f of geojson.features) {
+    const p = f.properties as MunicipalityProps;
+    if (!byCode.has(p.code)) byCode.set(p.code, p);
+  }
+  return [...byCode.values()].sort((a, b) => a.code.localeCompare(b.code));
+}
