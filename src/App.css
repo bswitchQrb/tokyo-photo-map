@@ -536,6 +536,11 @@ button {
   text-decoration: none;
 }
 
+.data-notice {
+  margin: -4px 0 8px;
+  color: var(--ink);
+}
+
 .credit {
   color: var(--ink-faint);
 }
