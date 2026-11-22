@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { FeatureCollection } from 'geojson';
 import { extractPhotoMeta } from '../domain/photo';
 import { findMunicipality } from '../domain/municipality';
@@ -10,165 +10,145 @@ interface Props {
   onVisit: (records: VisitRecord[]) => void;
 }
 
+type PhotoStatus = 'success' | 'no-gps' | 'outside' | 'duplicate';
+
 interface ProcessedPhoto {
   previewUrl: string;
   fileName: string;
   municipality: string | null;
-  dateStr: string | null;
-  status: 'success' | 'no-gps' | 'outside' | 'duplicate';
+  status: PhotoStatus;
 }
 
-type ResultMessage =
-  | { type: 'success'; text: string }
-  | { type: 'error'; text: string }
-  | { type: 'duplicate'; text: string }
-  | null;
+const STATUS_LABEL: Record<PhotoStatus, string> = {
+  success: '新しいスタンプ',
+  duplicate: '押印済み',
+  'no-gps': '位置情報なし',
+  outside: '都外',
+};
 
 export function PhotoUploader({ geojson, visited, onVisit }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [processing, setProcessing] = useState(false);
-  const [result, setResult] = useState<ResultMessage>(null);
+  const [dragging, setDragging] = useState(false);
+  const [message, setMessage] = useState<{ tone: 'good' | 'muted'; text: string } | null>(null);
   const [previews, setPreviews] = useState<ProcessedPhoto[]>([]);
+
+  // 差し替え・アンマウント時にプレビュー画像の ObjectURL を解放する
+  useEffect(() => () => previews.forEach((p) => URL.revokeObjectURL(p.previewUrl)), [previews]);
 
   const handleFiles = useCallback(
     async (files: FileList | null) => {
       if (!files || files.length === 0) return;
       setProcessing(true);
-      setResult(null);
-      setPreviews([]);
+      setMessage(null);
 
-      let successCount = 0;
-      let noGpsCount = 0;
-      let outsideCount = 0;
-      let dupCount = 0;
-      const newPreviews: ProcessedPhoto[] = [];
+      const results: ProcessedPhoto[] = [];
       const newRecords: VisitRecord[] = [];
-      const visitedCodes = new Set(visited.keys());
+      const seen = new Set(visited.keys());
 
       for (const file of Array.from(files)) {
         const previewUrl = URL.createObjectURL(file);
         const meta = await extractPhotoMeta(file);
-
         if (!meta) {
-          noGpsCount++;
-          newPreviews.push({ previewUrl, fileName: file.name, municipality: null, dateStr: null, status: 'no-gps' });
+          results.push({ previewUrl, fileName: file.name, municipality: null, status: 'no-gps' });
           continue;
         }
-
         const muni = findMunicipality(geojson, meta.longitude, meta.latitude);
         if (!muni) {
-          outsideCount++;
-          newPreviews.push({ previewUrl, fileName: file.name, municipality: null, dateStr: meta.dateStr, status: 'outside' });
+          results.push({ previewUrl, fileName: file.name, municipality: null, status: 'outside' });
           continue;
         }
-
-        if (visitedCodes.has(muni.code)) {
-          dupCount++;
-          newPreviews.push({ previewUrl, fileName: file.name, municipality: muni.name, dateStr: meta.dateStr, status: 'duplicate' });
+        if (seen.has(muni.code)) {
+          results.push({ previewUrl, fileName: file.name, municipality: muni.name, status: 'duplicate' });
           continue;
         }
-
-        const record: VisitRecord = {
+        seen.add(muni.code);
+        newRecords.push({
           name: muni.name,
           code: muni.code,
           visitedAt: meta.dateStr,
           photoName: file.name,
           latitude: meta.latitude,
           longitude: meta.longitude,
-        };
-        newRecords.push(record);
-        visitedCodes.add(muni.code);
-        successCount++;
-        newPreviews.push({ previewUrl, fileName: file.name, municipality: muni.name, dateStr: meta.dateStr, status: 'success' });
+        });
+        results.push({ previewUrl, fileName: file.name, municipality: muni.name, status: 'success' });
       }
 
-      if (newRecords.length > 0) {
-        onVisit(newRecords);
-      }
-
-      setPreviews(newPreviews);
-
-      const msgs: string[] = [];
-      if (successCount > 0) msgs.push(`${successCount}件の新しいエリアを塗りつぶしたよ！`);
-      if (dupCount > 0) msgs.push(`${dupCount}件はもう塗りつぶし済み`);
-      if (noGpsCount > 0) msgs.push(`${noGpsCount}件は位置情報なし`);
-      if (outsideCount > 0) msgs.push(`${outsideCount}件は東京都外`);
-
-      if (successCount > 0) {
-        setResult({ type: 'success', text: msgs.join(' / ') });
-      } else if (dupCount > 0) {
-        setResult({ type: 'duplicate', text: msgs.join(' / ') });
-      } else {
-        setResult({ type: 'error', text: msgs.join(' / ') });
-      }
-
+      if (newRecords.length > 0) onVisit(newRecords);
+      setPreviews(results);
+      setMessage(summarize(results, newRecords));
       setProcessing(false);
       if (inputRef.current) inputRef.current.value = '';
     },
     [geojson, visited, onVisit],
   );
 
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      handleFiles(e.dataTransfer.files);
-    },
-    [handleFiles],
-  );
-
-  const statusLabel = (status: ProcessedPhoto['status']) => {
-    switch (status) {
-      case 'success': return '🎉 NEW!';
-      case 'duplicate': return '✅ 済み';
-      case 'no-gps': return '📍 GPS なし';
-      case 'outside': return '🗺️ 都外';
-    }
-  };
-
   return (
     <div className="uploader">
+      <input
+        ref={inputRef}
+        id="photo-input"
+        type="file"
+        accept="image/*"
+        multiple
+        hidden
+        onChange={(e) => handleFiles(e.target.files)}
+      />
+
       <div
-        className="drop-zone"
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={handleDrop}
-        onClick={() => inputRef.current?.click()}
+        className={`drop-zone${dragging ? ' is-dragging' : ''}`}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragging(true);
+        }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragging(false);
+          handleFiles(e.dataTransfer.files);
+        }}
       >
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          hidden
-          onChange={(e) => handleFiles(e.target.files)}
-        />
-        {processing ? (
-          <p className="processing">処理中...</p>
-        ) : (
-          <>
-            <p className="drop-text">📸 写真をドラッグ＆ドロップ</p>
-            <p className="drop-sub">またはクリックして選択（複数OK）</p>
-          </>
-        )}
+        <button
+          type="button"
+          className="add-photo-btn"
+          onClick={() => inputRef.current?.click()}
+          disabled={processing}
+        >
+          {processing ? '写真を読んでいます…' : '写真からスタンプを押す'}
+        </button>
+        <p className="drop-hint">位置情報つきの写真を選んでください（複数まとめてOK）</p>
       </div>
 
-      {result && (
-        <p className={`result-msg ${result.type}`}>{result.text}</p>
-      )}
+      {message && <p className={`upload-message is-${message.tone}`}>{message.text}</p>}
 
       {previews.length > 0 && (
-        <div className="preview-grid">
-          {previews.map((p, i) => (
-            <div key={i} className={`preview-card ${p.status}`}>
+        <ul className="snapshots">
+          {previews.map((p) => (
+            <li key={p.previewUrl} className={`snapshot is-${p.status}`}>
               <img src={p.previewUrl} alt={p.fileName} />
-              <div className="preview-info">
-                <span className="preview-status">{statusLabel(p.status)}</span>
-                {p.municipality && <span className="preview-muni">{p.municipality}</span>}
-                {p.dateStr && <span className="preview-date">{p.dateStr}</span>}
-              </div>
-            </div>
+              <span className="snapshot-caption">{p.municipality ?? STATUS_LABEL[p.status]}</span>
+              {p.municipality && <span className="snapshot-status">{STATUS_LABEL[p.status]}</span>}
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </div>
   );
+}
+
+function summarize(results: ProcessedPhoto[], newRecords: VisitRecord[]) {
+  const count = (s: PhotoStatus) => results.filter((r) => r.status === s).length;
+  const parts: string[] = [];
+  if (newRecords.length > 0) {
+    const names = newRecords.map((r) => r.name);
+    parts.push(
+      names.length <= 3
+        ? `${names.join('・')}にスタンプを押しました`
+        : `${names.slice(0, 2).join('・')}ほか${names.length - 2}か所にスタンプを押しました`,
+    );
+  }
+  if (count('duplicate')) parts.push(`${count('duplicate')}枚は押印済みの場所`);
+  if (count('no-gps')) parts.push(`${count('no-gps')}枚は位置情報が入っていませんでした`);
+  if (count('outside')) parts.push(`${count('outside')}枚は対象エリアの外でした`);
+  return { tone: newRecords.length > 0 ? ('good' as const) : ('muted' as const), text: parts.join('。') + '。' };
 }
