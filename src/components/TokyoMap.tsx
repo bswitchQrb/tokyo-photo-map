@@ -135,7 +135,7 @@ const MunicipalityPath = memo(function MunicipalityPath({
 }) {
   const code = feat.properties.code;
 
-  let fill = c.municipalityDefault;
+  let fill: string = c.municipalityDefault;
   if (isVisited && isHovered) fill = c.municipalityVisitedHover;
   else if (isVisited) fill = c.municipalityVisited;
   else if (isHovered) fill = c.municipalityHover;
