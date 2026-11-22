@@ -58,6 +58,7 @@ src/
 npm install
 npm run dev     # http://localhost:3000
 npm run build   # dist/ に出力
+npm test        # テスト（Vitest）
 ```
 
 ### 境界データの再生成
