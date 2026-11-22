@@ -1,61 +1,16 @@
-/** アプリ全体のカラーパレット */
-export const colors = {
-  /** 地図 */
-  map: {
-    background: '#e2e8f0',
-    municipalityDefault: '#ffffff',
-    municipalityVisited: '#4ade80',
-    municipalityHover: '#e2e8f0',
-    municipalityVisitedHover: '#22c55e',
-    stroke: '#cbd5e1',
-    strokeHover: '#475569',
-    border: '#64748b',
-    borderWidth: 1.8,
-    strokeWidth: 0.8,
-    strokeWidthHover: 1.5,
-    tooltip: 'rgba(15, 23, 42, 0.85)',
-    tooltipText: '#ffffff',
-  },
-
-  /** 共通UI */
-  ui: {
-    background: '#f8fafc',
-    surface: '#ffffff',
-    text: '#334155',
-    textHeading: '#1e293b',
-    textMuted: '#94a3b8',
-    textSecondary: '#64748b',
-    border: '#e2e8f0',
-    shadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04)',
-  },
-
-  /** アクセント（グリーン） */
-  accent: {
-    base: '#10b981',
-    dark: '#059669',
-    light: '#34d399',
-    bg: '#f0fdf4',
-    bgHover: '#dcfce7',
-    border: '#bbf7d0',
-    preview: '#86efac',
-  },
-
-  /** フィードバック */
-  feedback: {
-    success: '#16a34a',
-    successBg: '#f0fdf4',
-    error: '#dc2626',
-    errorBg: '#fef2f2',
-    errorBorder: '#fecaca',
-    errorBgHover: '#fee2e2',
-    warning: '#d97706',
-    warningBg: '#fffbeb',
-  },
-
-  /** プレビューカード */
-  preview: {
-    success: '#22c55e',
-    duplicate: '#f59e0b',
-    error: '#ef4444',
-  },
-} as const;
+/**
+ * 地図（SVG）の配色。SVG 属性に直接渡すため CSS 変数ではなくここで管理する。
+ * UI 側の配色は App.css の :root を参照。値は「旅の記録帳」のパレットに合わせている。
+ */
+export const mapColors = {
+  municipality: '#fffaf0', // 生成りの紙
+  municipalityHover: '#f3e6cc',
+  visited: '#d9694c', // 朱肉
+  visitedHover: '#c4553a',
+  stroke: '#c9b79a', // 市区の境目（鉛筆の薄い線）
+  strokeActive: '#3d3128',
+  border: '#5b4636', // 23区と市部の境目（インク）
+  borderWidth: 1.6,
+  strokeWidth: 0.7,
+  strokeWidthActive: 1.6,
+};

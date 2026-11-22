@@ -40,15 +40,16 @@ src/
 ├── infrastructure/            # インフラ層
 │   └── visit-repository.ts    #   永続化（localStorage / CSV）
 ├── theme/                     # テーマ
-│   └── colors.ts              #   カラーパレット
+│   └── colors.ts              #   地図（SVG）の配色
 ├── components/                # プレゼンテーション層
 │   ├── TokyoMap.tsx            #   D3-geo SVG地図
 │   ├── PhotoUploader.tsx       #   写真アップ・プレビュー
-│   └── Stats.tsx               #   進捗・CSV読込・リセット
+│   ├── StampBook.tsx           #   49区市のスタンプ帳
+│   └── Progress.tsx            #   進捗・記録データの読込/書出/リセット
 ├── App.tsx                    # アプリルート
 ├── App.css                    # スタイル（CSS変数）
 └── data/
-    └── tokyo.geojson.json     # 東京49市区の境界
+    └── tokyo.geojson.json     # 東京49市区の境界（npm run geo:build で生成）
 ```
 
 ## 開発
@@ -57,4 +58,12 @@ src/
 npm install
 npm run dev     # http://localhost:3000
 npm run build   # dist/ に出力
+```
+
+### 境界データの再生成
+
+`data-src/tokyo.raw.geojson.json`（元データ・約10MB）を簡略化して、アプリに同梱する `src/data/tokyo.geojson.json`（約120KB）を作り直します。
+
+```bash
+npm run geo:build
 ```
