@@ -38,13 +38,16 @@ src/
 │   ├── visit.ts               #   訪問記録（型・追加・マージ）
 │   └── photo.ts               #   写真メタデータ（EXIF抽出）
 ├── infrastructure/            # インフラ層
-│   └── visit-repository.ts    #   永続化（localStorage / CSV）
+│   ├── visit-repository.ts    #   永続化（localStorage / CSV）
+│   ├── photo-store.ts         #   思い出の写真の保存（IndexedDB）
+│   └── thumbnail.ts           #   写真の縮小
 ├── theme/                     # テーマ
 │   └── colors.ts              #   地図（SVG）の配色
 ├── components/                # プレゼンテーション層
 │   ├── TokyoMap.tsx            #   D3-geo SVG地図
 │   ├── PhotoUploader.tsx       #   写真アップ・プレビュー
 │   ├── StampBook.tsx           #   49区市のスタンプ帳
+│   ├── PhotoViewer.tsx         #   区市の写真を見るカード
 │   └── Progress.tsx            #   進捗・記録データの読込/書出/リセット
 ├── App.tsx                    # アプリルート
 ├── App.css                    # スタイル（CSS変数）

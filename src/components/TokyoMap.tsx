@@ -9,6 +9,8 @@ import { mapColors as c } from '../theme/colors';
 interface Props {
   geojson: FeatureCollection;
   visited: VisitMap;
+  /** 訪問済みのエリアをクリック・タップしたとき（写真を開く） */
+  onOpen: (code: string) => void;
 }
 
 const WIDTH = 800;
@@ -21,7 +23,7 @@ interface LabelPos {
   y: number;
 }
 
-export function TokyoMap({ geojson, visited }: Props) {
+export function TokyoMap({ geojson, visited, onOpen }: Props) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState<string | null>(null);
   const [pos, setPos] = useState<LabelPos | null>(null);
@@ -71,8 +73,9 @@ export function TokyoMap({ geojson, visited }: Props) {
     (code: string, e: React.MouseEvent) => {
       setActive(code);
       updatePos(e.clientX, e.clientY);
+      if (visited.has(code)) onOpen(code);
     },
-    [updatePos],
+    [updatePos, visited, onOpen],
   );
 
   const activeFeature = active ? features.find((f) => f.properties.code === active) : null;

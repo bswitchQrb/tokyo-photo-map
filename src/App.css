@@ -454,6 +454,32 @@ button {
   margin-top: 1px;
 }
 
+/* 訪問済みのスタンプは押すと写真が開くボタン */
+button.stamp {
+  position: relative;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
+button.stamp:hover {
+  color: var(--shu-deep);
+}
+
+/* 写真が保存されている印（右下の小さな四角） */
+.stamp.has-photo::after {
+  content: '';
+  position: absolute;
+  right: 2px;
+  bottom: 4px;
+  width: 9px;
+  height: 7px;
+  border: 1.5px solid currentColor;
+  border-radius: 1px;
+  background: var(--page);
+}
+
 /* 区市名の文字数で大きさを変えて、内側の枠線にかからないようにする */
 .stamp[data-len='4'] .stamp-name,
 .stamp-empty[data-len='4'] {
@@ -491,6 +517,115 @@ button {
 @media (prefers-reduced-motion: reduce) {
   .stamp.is-fresh { animation: none; }
   .progress-fill, .municipality { transition: none; }
+}
+
+/* ---------- Photo viewer ---------- */
+.photo-viewer {
+  margin: auto;
+  padding: 0;
+  border: none;
+  background: transparent;
+  max-width: min(92vw, 560px);
+  width: 100%;
+  overflow: visible;
+}
+
+.photo-viewer::backdrop {
+  background: rgba(45, 36, 29, 0.6);
+}
+
+.photo-viewer[open] .photo-card {
+  animation: card-in 0.25s ease-out;
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) rotate(-1deg);
+  }
+}
+
+/* 写真を1枚貼ったカード */
+.photo-card {
+  position: relative;
+  background: #fff;
+  padding: 12px 12px 14px;
+  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.5);
+  transform: rotate(-0.8deg);
+}
+
+.photo-card::before {
+  content: '';
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  width: 110px;
+  height: 24px;
+  background: var(--tape);
+  transform: translateX(-50%) rotate(2deg);
+}
+
+.photo-card-frame img,
+.photo-card-empty {
+  display: block;
+  width: 100%;
+  max-height: 68vh;
+  object-fit: contain;
+  background: #f4efe4;
+}
+
+.photo-card-empty {
+  aspect-ratio: 4 / 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 16px;
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+}
+
+.photo-card-empty-sub {
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+}
+
+.photo-card-caption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+  padding: 0 2px;
+}
+
+.photo-card-name {
+  font-family: var(--font-hand);
+  font-weight: 600;
+  font-size: 1.25rem;
+}
+
+.photo-card-date {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.photo-card-close {
+  position: absolute;
+  top: -14px;
+  right: -10px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--page);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 /* ---------- Footer ---------- */

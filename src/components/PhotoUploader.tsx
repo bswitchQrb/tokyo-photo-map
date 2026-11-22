@@ -3,11 +3,18 @@ import type { FeatureCollection } from 'geojson';
 import { extractPhotoMeta } from '../domain/photo';
 import { findMunicipality } from '../domain/municipality';
 import type { VisitRecord, VisitMap } from '../domain/visit';
+import { visitDateKey } from '../domain/visit';
+
+/** 新しく押すスタンプと、その元になった写真 */
+export interface NewVisit {
+  record: VisitRecord;
+  file: File;
+}
 
 interface Props {
   geojson: FeatureCollection;
   visited: VisitMap;
-  onVisit: (records: VisitRecord[]) => void;
+  onVisit: (visits: NewVisit[]) => void;
 }
 
 type PhotoStatus = 'success' | 'no-gps' | 'outside' | 'duplicate';
@@ -43,8 +50,8 @@ export function PhotoUploader({ geojson, visited, onVisit }: Props) {
       setMessage(null);
 
       const results: ProcessedPhoto[] = [];
-      const newRecords: VisitRecord[] = [];
-      const seen = new Set(visited.keys());
+      // 同じアップロードの中に同じ区市の写真が何枚かあれば、撮影日がいちばん早い写真を使う
+      const pending = new Map<string, NewVisit & { resultIndex: number }>();
 
       for (const file of Array.from(files)) {
         const previewUrl = URL.createObjectURL(file);
@@ -58,25 +65,32 @@ export function PhotoUploader({ geojson, visited, onVisit }: Props) {
           results.push({ previewUrl, fileName: file.name, municipality: null, status: 'outside' });
           continue;
         }
-        if (seen.has(muni.code)) {
+        if (visited.has(muni.code)) {
           results.push({ previewUrl, fileName: file.name, municipality: muni.name, status: 'duplicate' });
           continue;
         }
-        seen.add(muni.code);
-        newRecords.push({
+        const record: VisitRecord = {
           name: muni.name,
           code: muni.code,
           visitedAt: meta.dateStr,
           photoName: file.name,
           latitude: meta.latitude,
           longitude: meta.longitude,
-        });
+        };
+        const prev = pending.get(muni.code);
+        if (prev && visitDateKey(prev.record.visitedAt) <= visitDateKey(record.visitedAt)) {
+          results.push({ previewUrl, fileName: file.name, municipality: muni.name, status: 'duplicate' });
+          continue;
+        }
+        if (prev) results[prev.resultIndex].status = 'duplicate';
+        pending.set(muni.code, { record, file, resultIndex: results.length });
         results.push({ previewUrl, fileName: file.name, municipality: muni.name, status: 'success' });
       }
 
-      if (newRecords.length > 0) onVisit(newRecords);
+      const newVisits = [...pending.values()].map(({ record, file }) => ({ record, file }));
+      if (newVisits.length > 0) onVisit(newVisits);
       setPreviews(results);
-      setMessage(summarize(results, newRecords));
+      setMessage(summarize(results, newVisits.map((v) => v.record)));
       setProcessing(false);
       if (inputRef.current) inputRef.current.value = '';
     },
