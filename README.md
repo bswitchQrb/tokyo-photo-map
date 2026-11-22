@@ -48,7 +48,7 @@ src/
 ├── App.tsx                    # アプリルート
 ├── App.css                    # スタイル（CSS変数）
 └── data/
-    └── tokyo.geojson.json     # 東京49市区の境界
+    └── tokyo.geojson.json     # 東京49市区の境界（npm run geo:build で生成）
 ```
 
 ## 開発
@@ -57,4 +57,12 @@ src/
 npm install
 npm run dev     # http://localhost:3000
 npm run build   # dist/ に出力
+```
+
+### 境界データの再生成
+
+`data-src/tokyo.raw.geojson.json`（元データ・約10MB）を簡略化して、アプリに同梱する `src/data/tokyo.geojson.json`（約120KB）を作り直します。
+
+```bash
+npm run geo:build
 ```
