@@ -40,11 +40,12 @@ src/
 ├── infrastructure/            # インフラ層
 │   └── visit-repository.ts    #   永続化（localStorage / CSV）
 ├── theme/                     # テーマ
-│   └── colors.ts              #   カラーパレット
+│   └── colors.ts              #   地図（SVG）の配色
 ├── components/                # プレゼンテーション層
 │   ├── TokyoMap.tsx            #   D3-geo SVG地図
 │   ├── PhotoUploader.tsx       #   写真アップ・プレビュー
-│   └── Stats.tsx               #   進捗・CSV読込・リセット
+│   ├── StampBook.tsx           #   49区市のスタンプ帳
+│   └── Progress.tsx            #   進捗・記録データの読込/書出/リセット
 ├── App.tsx                    # アプリルート
 ├── App.css                    # スタイル（CSS変数）
 └── data/
