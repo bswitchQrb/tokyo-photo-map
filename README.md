@@ -63,7 +63,7 @@ npm run geo:build  # 境界データを元データから作り直す
 
 ## データの出典
 
-市区の境界データは、「[国土数値情報（行政区域データ）](https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2024.html)」（国土交通省）をもとに bswitchQrb が作成しました。2020年1月1日時点のデータから東京都の23区と26市を取り出し、座標の丸めと形状の簡略化をしています。
+市区の境界データは、「[国土数値情報（行政区域データ）](https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2024.html)」（国土交通省）をもとに bswitchQrb が作成しました（リンク先は 2024 年版の説明ページです）。使っているのは 2020年1月1日時点のデータで、そこから東京都の23区と26市を取り出し、座標の丸めと形状の簡略化をしています。
 
 - 元データ: `data-src/tokyo.raw.geojson.json`
 - アプリで使う簡略化版: `src/data/tokyo.geojson.json`
